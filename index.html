@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./output.css" rel="stylesheet" />
+    <title>Pokedex</title>
+  </head>
+  <body class="bg-gray-100">
+    <div id="app">
+      <div class="container">
+        <!-- header -->
+        <div class="mt-12">
+          <img
+            class="mx-auto max-w-96"
+            src="/Asset/Pokemon Logo Sliced.svg"
+            alt=""
+          />
+
+          <form class="max-w-md mx-auto mt-10">
+            <label
+              for="default-search"
+              class="mb-2 text-sm font-medium text-gray-900 sr-only"
+              >Search</label
+            >
+            <div class="relative">
+              <div
+                class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none"
+              >
+                <svg
+                  class="w-4 h-4 text-gray-500"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                  />
+                </svg>
+              </div>
+              <input
+                type="search"
+                id="default-search"
+                class="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search Pokemon..."
+                required
+                v-model="search"
+              />
+            </div>
+            <label for="default-search" class="text-sm"
+              ><span class="text-blue-500 font-bold">Suggestion: </span>
+              <span
+                class="text-amber-500 hover:cursor-pointer"
+                v-for="i in suggestedPokemon"
+                @click="viewDetailPokemon(i.name)"
+                >{{ i.name }} |
+              </span>
+            </label>
+          </form>
+        </div>
+
+        <!-- content -->
+        <div class="mt-20">
+          <!-- view all -->
+          <div class="view-all" v-if="!viewAsDetail">
+            <div
+              class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+            >
+              <div class="mx-auto pb-5" v-for="item in pokemonList">
+                <div
+                  class="max-w-sm bg-white rounded-lg shadow-lg"
+                  @click="viewDetailPokemon(item.name)"
+                >
+                  <a href="#">
+                    <img
+                      class="rounded-t-lg mx-auto min-w-52"
+                      :src="item.sprites.front_default"
+                      alt=""
+                    />
+                  </a>
+                  <div class="p-5">
+                    <a href="#">
+                      <h5
+                        class="mb-2 text-2xl font-bold tracking-tight text-black-300 text-center"
+                      >
+                        {{ item.name }}
+                      </h5>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- view detail -->
+          <div class="view-detail" v-else>
+            <a
+              href="#"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              @click="viewAsDetail=false"
+            >
+              Back to all pokemon
+              <svg
+                class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 14 10"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M1 5h12m0 0L9 1m4 4L9 9"
+                />
+              </svg>
+            </a>
+
+            <div class="grid grid cols-1 gap-4 mt-10 md:grid-cols-2">
+              <div class="justify-self-end mx-auto">
+                <a
+                  class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl"
+                >
+                  <img
+                    class="object-cover min-w-96 mx-auto rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg"
+                    :src="selectedPokemon.sprites.front_default"
+                    alt=""
+                  />
+                </a>
+              </div>
+
+              <div class="">
+                <a
+                  class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-xl"
+                >
+                  <div class="flex flex-col justify-between p-4 leading-normal">
+                    <h5
+                      class="mb-2 text-2xl font-bold tracking-tight text-black"
+                    >
+                      {{ selectedPokemon.name }}
+                    </h5>
+                    <p class="mb-3 font-normal text-black">
+                      <label for="">Type : </label> <br />
+                      <span v-for="i in selectedPokemon.types">
+                        {{ i.type.name }} |
+                      </span>
+                    </p>
+
+                    <p class="mb-3 font-normal text-black">
+                      <label for="">Skills : </label><br />
+                      <span v-for="i in selectedPokemon.moves">
+                        {{ i.move.name }} |
+                      </span>
+                    </p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+      createApp({
+        data() {
+          return {
+            pokemonList: [],
+            viewAsDetail: false,
+            selectedPokemon: "",
+            search: "",
+            gen1Pokemon: [],
+            suggestedPokemon: "",
+          };
+        },
+        methods: {
+          async getListPokemon() {
+            let response = await fetch("https://pokeapi.co/api/v2/pokemon");
+            let data = await response.json();
+            let results = data.results;
+            // console.log(results);
+
+            results.forEach((item) => {
+              this.getEachPokemon(item);
+            });
+          },
+
+          async getEachPokemon(result) {
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon/" + result.name
+            );
+            let data = await response.json();
+
+            // console.log(data);
+            this.pokemonList.push(data);
+            this.pokemonList.sort((a, b) => a.id - b.id);
+          },
+
+          async viewDetailPokemon(detailName) {
+            this.viewAsDetail = true;
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon/" + detailName
+            );
+            let data = await response.json();
+            console.log(data);
+            this.selectedPokemon = data;
+          },
+
+          async getGen1Pokemon() {
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon?limit=151"
+            );
+            let data = await response.json();
+            let result = data.results;
+
+            this.gen1Pokemon = result;
+            console.log(this.gen1Pokemon);
+          },
+        },
+        watch: {
+          search() {
+            let filteredPokemon = this.gen1Pokemon.filter((item) => {
+              return item.name.includes(this.search);
+            });
+            this.suggestedPokemon = filteredPokemon.slice(0, 5);
+            // console.log(filteredPokemon);
+          },
+        },
+        mounted() {
+          this.getListPokemon();
+          this.getGen1Pokemon();
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
